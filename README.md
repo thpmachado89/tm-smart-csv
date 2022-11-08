@@ -15,10 +15,14 @@ Subir o backend
 
 3) docker-compose up -d
 
+Rodar as migrations
+
+4) Dentro do terminal do servidor executar: php artisan migrate
+
 Iniciar o serviço de filas do laravel
 
-4) Dentro do terminal do servidor executar: php artisan queue:work --daemon
+5) Dentro do terminal do servidor executar: php artisan queue:work --daemon
 
 Rodar o frontend
 
-5) npm run dev
+6) npm run dev
