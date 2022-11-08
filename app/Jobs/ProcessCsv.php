@@ -20,7 +20,7 @@ class ProcessCsv implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 3600;
+    public $timeout = 86400;
 
 
     /**
