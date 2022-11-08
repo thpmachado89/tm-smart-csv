@@ -11,18 +11,26 @@ Entrar no diretório
 
 2) cd tm-smart-csv
 
+Instalar dependências do Front
+
+3) npm install
+
 Subir o backend
 
-3) docker-compose up -d
+4) docker-compose up -d
+
+Instalar dependências do backend
+
+5) Dentro do terminal do servidor executar: composer install
 
 Rodar as migrations
 
-4) Dentro do terminal do servidor executar: php artisan migrate
+6) Dentro do terminal do servidor executar: php artisan migrate
 
 Iniciar o serviço de filas do laravel
 
-5) Dentro do terminal do servidor executar: php artisan queue:work --daemon
+7) Dentro do terminal do servidor executar: php artisan queue:work --daemon
 
 Rodar o frontend
 
-6) npm run dev
+8) npm run dev
