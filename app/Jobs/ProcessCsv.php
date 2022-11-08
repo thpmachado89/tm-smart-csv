@@ -85,15 +85,15 @@ class ProcessCsv implements ShouldQueue
                 );
                 $pusher->trigger('upload-csv', 'status-import', array('message' => $message));
 
-
-                $message = json_encode(
-                    Array(
-                        "uploadId"=>$upload->id,
-                        "errors"=>Array($clientSaved),
-                        "total"=>count($clientSaved)
-                        )
-                );
-                $pusher->trigger('upload-csv', 'status-import', array('message' => $message));
+                if($clientSaved){
+                    $message = json_encode(
+                        Array(
+                            "uploadId"=>$upload->id,
+                            "errors"=>Array($clientSaved)
+                            )
+                    );
+                    $pusher->trigger('upload-csv', 'status-import', array('message' => $message));
+                }
             }
             /*
             foreach($arrayCSV as $data){

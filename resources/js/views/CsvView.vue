@@ -106,7 +106,6 @@ export default {
 
               
               if(message.uploadId == uploadId && message.errors){
-                document.querySelector("#errors_box").style.display = "block";
                 console.log("errors =>");
                 console.log(message.errors.length);
                 console.log(message.errors);
@@ -118,6 +117,7 @@ export default {
                       console.log(message.errors[i][i2]);
                       if(message.errors[i][i2]){
                         if(message.errors[i][i2].field && message.errors[i][i2].message && message.errors[i][i2].line){
+                          document.querySelector("#errors_box").style.display = "block";
                           document.querySelector("#errors_import").innerHTML += `<p>Line: ${message.errors[i][i2].line} => Field: ${message.errors[i][i2].field} => Error:  ${message.errors[i][i2].message}</p>`;
                         }
                       }

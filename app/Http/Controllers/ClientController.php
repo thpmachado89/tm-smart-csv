@@ -32,6 +32,16 @@ class ClientController extends Controller
         $errors[] = $this->validateDate($data, $line);
         $dataSanitized = $this->sanitizeClient($data);
         $errors[] = $this->validateDocument($data, $line);
+        if(is_array($errors)){
+            if(count($errors) > 0){
+                if(!is_array(current($errors))){
+                    $errors = array_unique(@$errors);
+                    if(!$errors[0]){
+                        $errors = [];
+                    }
+                }
+            }
+        }
         if(!$errors){
             if(!Client::where('document', $dataSanitized["document"])->first()){
                 Client::create(
