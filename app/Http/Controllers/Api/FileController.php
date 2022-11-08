@@ -35,11 +35,14 @@ class FileController extends Controller
             Upload::create([
                 "filename"=>$fileName,
                 "status"=>"Aguardando",
+                "userId"=>$request->user()->id
             ]);
+
+            $upload = Upload::orderByDesc('id')->first();
 
             ProcessCsv::dispatch();
                   
-            return response()->json(['success'=>true,'message'=>'Arquivo enviado com sucesso!']);
+            return response()->json(['success'=>true,'message'=>'Arquivo enviado com sucesso!', 'uploadId'=>$upload->id]);
 
         }
     }

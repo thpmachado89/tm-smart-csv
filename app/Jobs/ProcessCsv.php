@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Services\CsvService;
 use App\Http\Controllers\ClientController;
+use Pusher;
 
 class ProcessCsv implements ShouldQueue
 {
@@ -36,7 +37,20 @@ class ProcessCsv implements ShouldQueue
             ->take(1)
                ->first();
 
+        $pusher = new Pusher\Pusher(env("PUSHER_APP_KEY"), env("PUSHER_APP_SECRET"), env("PUSHER_APP_ID"), array('cluster' => env('PUSHER_APP_CLUSTER')));
+
+        $message = json_encode(
+            Array(
+                "uploadId"=>$upload->id,
+                "message"=>"Start"
+                )
+        );
+        $pusher->trigger('upload-csv', 'status-import', array('message' => $message));
+
+        //env('DB_CONNECTION')
+
         if($upload->id){
+
             $csv = public_path('upload') . "/" . $upload->filename;
     
             if(!file_exists($csv)){ 
@@ -44,16 +58,42 @@ class ProcessCsv implements ShouldQueue
             }
     
             $arrayCSV = CsvService::getArrayFromCSV($csv);
-            Log::info($arrayCSV);
+
+            $total = count($arrayCSV);
+
+            $i = 0;
+
             foreach($arrayCSV as $data){
+                $i++;
+                Log::info($data);
                 $clientSaved = $client->create([
                     "name" => $data[0],
                     "email" => $data[1],
                     "document" => $data[2],
                     "city" => $data[3],
                     "state" => $data[4],
-                    "start_date" => $data[5]
+                    "start_date" => $data[5],
+                    "line" => $i
                 ]);
+                Log::info($clientSaved);
+                $percent = ($i * 100)/$total;
+                $message = json_encode(
+                    Array(
+                        "uploadId"=>$upload->id,
+                        "message"=>$percent."%"
+                        )
+                );
+                $pusher->trigger('upload-csv', 'status-import', array('message' => $message));
+
+
+                $message = json_encode(
+                    Array(
+                        "uploadId"=>$upload->id,
+                        "errors"=>Array($clientSaved),
+                        "total"=>count($clientSaved)
+                        )
+                );
+                $pusher->trigger('upload-csv', 'status-import', array('message' => $message));
             }
             /*
             foreach($arrayCSV as $data){
@@ -82,6 +122,17 @@ class ProcessCsv implements ShouldQueue
             $upload->status = "Processado";
             $upload->save();
         }
+
+        $message = json_encode(
+            Array(
+                "uploadId"=>$upload->id,
+                "message"=>"Finish",
+                "total"=>$total
+                )
+        );
+        $pusher->trigger('upload-csv', 'status-import', array('message' => $message));
+
+        unlink($csv);
 
         Log::error('PROCESS FINISHED');
     }

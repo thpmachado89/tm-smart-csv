@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
+import Pusher from 'pusher-js';
 
 export default {
   name: 'Csv',
@@ -41,6 +42,8 @@ export default {
         e.preventDefault();
         let currentObj = this;
 
+        const router = useRouter();
+
         document.querySelector("div.loading").style.display = "flex";
 
         var formData = new FormData();
@@ -65,15 +68,65 @@ export default {
           if(response.data.success){
 
             document.querySelector(".alerts").innerHTML = `
-            <div role="alert">
-              <div class="bg-green-500 text-white font-bold rounded-t px-4 py-2">
-                Sucesso!
+              <div role="alert">
+                <div class="bg-green-500 text-white font-bold rounded-t px-4 py-2">
+                  Sucesso!
+                </div>
+                <div class="border border-t-0 border-green-400 rounded-b bg-green-100 px-4 py-3 text-green-700">
+                  <p>${response.data.message}</p>
+                  <p><b>Status processamento:</b> <span id="status_import"></span></p>
+                </div>
               </div>
-              <div class="border border-t-0 border-green-400 rounded-b bg-green-100 px-4 py-3 text-green-700">
-                <p>${response.data.message}</p>
+              <div id="errors_box" role="alert" class="mt-5 mb-5" style="display:none;">
+                <div class="bg-red-500 text-white font-bold rounded-t px-4 py-2">
+                  Errors
+                </div>
+                <div class="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700">
+                  <p><b>Erros de processamento:</b></p>
+                  <div id="errors_import"></div>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+
+            let uploadId = response.data.uploadId;
+
+            var pusher = new Pusher("7b3702a5d9470d4f46ca", {
+              cluster: "us2",
+            });
+
+            var channel = pusher.subscribe("upload-csv");
+
+            channel.bind("status-import", (data) => {
+
+              let message = JSON.parse(data.message);
+
+              if(message.uploadId == uploadId && !message.errors){
+                document.querySelector("#status_import").innerHTML = message.message;
+              }
+
+              
+              if(message.uploadId == uploadId && message.errors){
+                document.querySelector("#errors_box").style.display = "block";
+                console.log("errors =>");
+                console.log(message.errors.length);
+                console.log(message.errors);
+                for (let i = 0; i < message.errors.length; i++) {
+                  console.log("indice: " + i);
+                  if(message.errors[i]){
+                    for(let i2 = 0; i2 < message.errors[i].length; i2++){
+                      console.log("new ==>");
+                      console.log(message.errors[i][i2]);
+                      if(message.errors[i][i2]){
+                        if(message.errors[i][i2].field && message.errors[i][i2].message && message.errors[i][i2].line){
+                          document.querySelector("#errors_import").innerHTML += `<p>Line: ${message.errors[i][i2].line} => Field: ${message.errors[i][i2].field} => Error:  ${message.errors[i][i2].message}</p>`;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+            });
 
           } else if(response.data.error) {
           
